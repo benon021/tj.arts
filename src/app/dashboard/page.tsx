@@ -14,34 +14,74 @@ import {
   LogOut,
   ChevronRight,
   User,
-  LayoutDashboard
+  LayoutDashboard,
+  Pencil,
 } from 'lucide-react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
+interface ProfileData {
+  id: string
+  email: string
+  username: string
+  is_admin: boolean
+  created_at: string
+}
+
 export default function DashboardPage() {
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<ProfileData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [orders, setOrders] = useState<any[]>([])
+  const [stats, setStats] = useState({
+    total: 0,
+    pending: 0,
+    in_progress: 0,
+    completed: 0
+  })
   const router = useRouter()
 
   useEffect(() => {
-    async function getProfile() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        setUser(user)
-      } else {
+    async function getDashboardData() {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
         router.push('/login')
+        setLoading(false)
+        return
+      }
+
+      try {
+        // Fetch profile
+        const profileRes = await fetch('/api/account', {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        })
+        if (profileRes.ok) {
+          const profileData: ProfileData = await profileRes.json()
+          setUser(profileData)
+        }
+
+        // Fetch orders and stats
+        const ordersRes = await fetch('/api/orders', {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        })
+        if (ordersRes.ok) {
+          const ordersData = await ordersRes.json()
+          setOrders(ordersData.orders || [])
+          setStats(ordersData.stats)
+        }
+      } catch (err) {
+        console.error('Failed to fetch dashboard data', err)
       }
       setLoading(false)
     }
-    getProfile()
+    getDashboardData()
   }, [router])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/')
   }
+
+  const displayName = user?.username || user?.email?.split('@')[0] || 'Artist'
 
   if (loading) {
     return (
@@ -64,7 +104,7 @@ export default function DashboardPage() {
             animate={{ opacity: 1, x: 0 }}
           >
             <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4">
-              Welcome, <span className="gold-gradient italic">{user?.email?.split('@')[0]}</span>
+              Welcome, <span className="gold-gradient italic">{displayName}</span>
             </h1>
             <p className="text-muted-foreground font-light text-lg">
               Manage your cinematic art collections and studio profile.
@@ -96,9 +136,9 @@ export default function DashboardPage() {
         {/* Quick Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           {[
-            { label: 'Total Artworks', value: '0', icon: Palette, color: 'text-primary' },
-            { label: 'Active Orders', value: '0', icon: Clock, color: 'text-blue-400' },
-            { label: 'Collections', value: '0', icon: ShoppingBag, color: 'text-purple-400' },
+            { label: 'Total Artworks', value: stats.total, icon: Palette, color: 'text-primary' },
+            { label: 'Active Orders', value: stats.pending + stats.in_progress, icon: Clock, color: 'text-blue-400' },
+            { label: 'Completed', value: stats.completed, icon: ShoppingBag, color: 'text-purple-400' },
             { label: 'Studio Sparks', value: '120', icon: Sparkles, color: 'text-amber-400' },
           ].map((stat, i) => (
             <motion.div
@@ -135,24 +175,57 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            {/* Empty State */}
-            <div className="glass p-12 rounded-[2rem] border border-border/50 flex flex-col items-center justify-center text-center space-y-6">
-              <div className="w-24 h-32 bg-white/5 border-2 border-dashed border-border rounded-2xl flex items-center justify-center text-muted-foreground/30">
-                <Palette size={48} />
+            {/* Artwork List or Empty State */}
+            {orders.length === 0 ? (
+              <div className="glass p-12 rounded-[2rem] border border-border/50 flex flex-col items-center justify-center text-center space-y-6">
+                <div className="w-24 h-32 bg-white/5 border-2 border-dashed border-border rounded-2xl flex items-center justify-center text-muted-foreground/30">
+                  <Palette size={48} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold mb-2">No Artworks Found</h3>
+                  <p className="text-muted-foreground font-light max-w-sm mx-auto">
+                    You haven&apos;t commissioned any cinematic masterpieces yet. Let&apos;s start your first artistic journey!
+                  </p>
+                </div>
+                <Link 
+                  href="/create"
+                  className="px-8 py-3 bg-white/5 border border-border rounded-xl text-sm font-bold hover:bg-white/10 transition-all"
+                >
+                  Create First Art
+                </Link>
               </div>
-              <div>
-                <h3 className="text-xl font-bold mb-2">No Artworks Found</h3>
-                <p className="text-muted-foreground font-light max-w-sm mx-auto">
-                  You haven&apos;t commissioned any cinematic masterpieces yet. Let&apos;s start your first artistic journey!
-                </p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {orders.slice(0, 4).map((order, i) => (
+                  <motion.div
+                    key={order.id}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="glass rounded-3xl border border-border/50 overflow-hidden group hover:border-primary/30 transition-all"
+                  >
+                    <div className="aspect-[4/5] bg-black/40 relative">
+                       <div className="absolute inset-0 flex items-center justify-center">
+                          <Palette size={48} className="text-muted-foreground/20" />
+                       </div>
+                       <div className="absolute top-4 left-4">
+                          <span className={`text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full border border-white/10 backdrop-blur-md ${
+                            order.status === 'completed' ? 'text-green-400 bg-green-400/10' : 
+                            order.status === 'in_progress' ? 'text-primary bg-primary/10' : 'text-amber-400 bg-amber-400/10'
+                          }`}>
+                            {order.status.replace('_', ' ')}
+                          </span>
+                       </div>
+                    </div>
+                    <div className="p-6">
+                       <p className="text-[10px] text-primary font-bold uppercase tracking-[0.2em] mb-1">{order.template_id}</p>
+                       <h4 className="text-lg font-bold truncate">{order.title}</h4>
+                       <p className="text-xs text-muted-foreground mt-1">Ordered on {new Date(order.created_at).toLocaleDateString()}</p>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
-              <Link 
-                href="/create"
-                className="px-8 py-3 bg-white/5 border border-border rounded-xl text-sm font-bold hover:bg-white/10 transition-all"
-              >
-                Create First Art
-              </Link>
-            </div>
+            )}
           </div>
 
           {/* Sidebar Section */}
@@ -163,14 +236,18 @@ export default function DashboardPage() {
 
             <div className="glass p-8 rounded-[2.5rem] border border-border/50 space-y-8 sticky top-32 shadow-2xl">
               <div className="flex flex-col items-center gap-4 text-center">
-                <div className="w-24 h-24 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary relative group cursor-pointer overflow-hidden">
+                <Link
+                  href="/settings"
+                  className="w-24 h-24 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary relative group cursor-pointer overflow-hidden"
+                >
                   <User size={48} className="group-hover:scale-110 transition-transform duration-500" />
                   <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <Edit2 size={24} className="text-white" />
+                    <Pencil size={24} className="text-white" />
                   </div>
-                </div>
+                </Link>
                 <div>
-                   <p className="font-bold text-lg">{user?.email?.split('@')[0]}</p>
+                   <p className="font-bold text-lg">{displayName}</p>
+                   <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-[200px]">{user?.email}</p>
                    <p className="text-xs text-muted-foreground uppercase tracking-widest mt-1 font-bold">Standard Collector</p>
                 </div>
               </div>
@@ -178,7 +255,7 @@ export default function DashboardPage() {
               <div className="space-y-4 pt-6 border-t border-border/50">
                 <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Quick Links</p>
                 {[
-                  { label: 'Security Settings', icon: Settings, href: '/settings' },
+                  { label: 'Account Settings', icon: Settings, href: '/settings' },
                   { label: 'Payment Methods', icon: LayoutDashboard, href: '/payment' },
                   { label: 'Saved Templates', icon: Palette, href: '/templates' },
                 ].map((item, i) => (
@@ -198,7 +275,7 @@ export default function DashboardPage() {
 
               <div className="p-6 bg-primary/5 border border-primary/20 rounded-[2rem] text-center space-y-2">
                 <p className="text-[10px] uppercase font-bold tracking-widest text-primary">Membership Status</p>
-                <p className="text-sm font-serif font-bold italic italic">Premium Artist Tier</p>
+                <p className="text-sm font-serif font-bold italic">Premium Artist Tier</p>
                 <button className="text-xs text-primary font-bold hover:underline mt-2">Upgrade Account</button>
               </div>
             </div>
@@ -206,25 +283,5 @@ export default function DashboardPage() {
         </div>
       </div>
     </main>
-  )
-}
-
-function Edit2(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-      <path d="m15 5 4 4" />
-    </svg>
   )
 }

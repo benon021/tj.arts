@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { Phone, ShieldCheck, CreditCard, Loader2, CheckCircle2, ArrowRight } from 'lucide-react'
 import Image from 'next/image'
 import { useOrderStore } from '@/store/useOrderStore'
+import { supabase } from '@/lib/supabase'
 
 export default function PaymentPage() {
   const [phoneNumber, setPhoneNumber] = useState('')
@@ -18,9 +19,39 @@ export default function PaymentPage() {
     setLoading(true)
 
     // Simulate M-Pesa STK Push
-    setTimeout(() => {
-      setLoading(false)
-      setSuccess(true)
+    setTimeout(async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) {
+          throw new Error('No session')
+        }
+
+        const response = await fetch('/api/orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({
+            templateId: templateId || 'unknown',
+            title: titleText || 'Custom Artwork',
+            phoneNumber: phoneNumber,
+            price: 3500,
+            depositPaid: 1750
+          })
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to save order')
+        }
+
+        setLoading(false)
+        setSuccess(true)
+      } catch (error) {
+        console.error('Payment Error:', error)
+        setLoading(false)
+        alert('Payment initiated but failed to record order. Please contact support.')
+      }
     }, 3000)
   }
 
