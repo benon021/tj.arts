@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-serif" });
 
 export const metadata: Metadata = {
-  title: "LUMIAXY | Cinematic Custom Art Studio",
+  title: "TJ.ARTS | Cinematic Custom Art Studio",
   description: "Turn your life into a movie. Premium custom artwork, Netflix-style posters, and luxury frames.",
 };
 

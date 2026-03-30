@@ -31,7 +31,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="py-12 border-t border-border/50 text-center">
-        <p className="text-sm text-muted-foreground">© 2024 LUMIAXY ART STUDIO. All rights reserved.</p>
+        <p className="text-sm text-muted-foreground">© 2024 TJ.ARTS STUDIO. All rights reserved.</p>
         <div className="flex justify-center space-x-6 mt-4">
           <a href="#" className="text-xs hover:text-primary">Instagram</a>
           <a href="#" className="text-xs hover:text-primary">Facebook</a>

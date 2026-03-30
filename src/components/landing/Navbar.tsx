@@ -14,7 +14,7 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-20">
           <div className="flex items-center">
             <Link href="/" className="text-2xl font-serif font-bold gold-gradient tracking-tighter">
-              LUMIAXY
+              TJ.ARTS
             </Link>
           </div>
 
@@ -27,7 +27,7 @@ export default function Navbar() {
               Create Art
             </Link>
             <div className="flex items-center space-x-4 border-l border-border/50 pl-8">
-               <Link href="/login" className="p-2 hover:bg-white/5 rounded-full transition-colors">
+               <Link href="/dashboard" className="p-2 hover:bg-white/5 rounded-full transition-colors">
                 <User size={20} />
               </Link>
               <Link href="/orders" className="p-2 hover:bg-white/5 rounded-full transition-colors relative">

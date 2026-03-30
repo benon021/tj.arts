@@ -60,7 +60,7 @@ export default function PaymentPage() {
           <div className="flex-[1.5] space-y-8">
             <div>
               <h1 className="text-4xl font-serif font-bold mb-4">Secure <span className="gold-gradient italic">Checkout</span></h1>
-              <p className="text-muted-foreground font-light">Complete your deposit to lock in your artist's schedule.</p>
+              <p className="text-muted-foreground font-light">Complete your deposit to lock in your artist&apos;s schedule.</p>
             </div>
 
             <div className="glass p-8 rounded-3xl border border-border/50 space-y-8">
@@ -139,11 +139,11 @@ export default function PaymentPage() {
 
               <div className="pt-6 space-y-3">
                 <p className="text-xs text-muted-foreground italic font-light">
-                  "Completion estimated within 2-3 business days after deposit verification."
+                  &quot;Completion estimated within 2-3 business days after deposit verification.&quot;
                 </p>
                 <div className="pt-4 flex items-center gap-2 text-primary">
                   <div className="w-1 h-1 bg-primary rounded-full" />
-                  <span className="text-[10px] uppercase font-bold tracking-widest">LUMIAXY GENUINE ARTWORK</span>
+                  <span className="text-[10px] uppercase font-bold tracking-widest">TJ.ARTS GENUINE ARTWORK</span>
                 </div>
               </div>
             </div>

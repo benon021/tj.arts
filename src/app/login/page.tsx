@@ -21,17 +21,48 @@ export default function LoginPage() {
     setError(null)
 
     try {
+      let authUser = null;
       if (isRegister) {
-        const { error } = await supabase.auth.signUp({ email, password })
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: undefined,
+          }
+        })
         if (error) throw error
-        alert('Check your email for the confirmation link!')
+        
+        // Auto-login after signup
+        if (data.session) {
+          authUser = data.session.user;
+        } else {
+          // If session not returned, sign in manually
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+          if (signInError) throw signInError
+          authUser = signInData.user;
+        }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
-        router.push('/dashboard')
+        authUser = data.user;
       }
-    } catch (err: any) {
-      setError(err.message)
+
+      if (authUser) {
+        // Fetch profile to check for admin status
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', authUser.id)
+          .single()
+
+        if (profile?.is_admin) {
+          router.push('/admin')
+        } else {
+          router.push('/dashboard')
+        }
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred')
     } finally {
       setLoading(false)
     }
@@ -44,14 +75,14 @@ export default function LoginPage() {
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[120px]" />
       </div>
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="relative z-10 w-full max-w-md glass p-8 rounded-3xl border border-border/50 shadow-2xl"
       >
         <div className="text-center mb-10">
           <Link href="/" className="text-3xl font-serif font-bold gold-gradient italic mb-4 block">
-            LUMIAXY
+            TJ.ARTS
           </Link>
           <h2 className="text-2xl font-bold">{isRegister ? 'Create an Account' : 'Welcome Back'}</h2>
           <p className="text-muted-foreground mt-2 font-light">
@@ -64,12 +95,12 @@ export default function LoginPage() {
             <label className="text-sm font-medium ml-1">Email Address</label>
             <div className="relative">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-              <input 
-                type="email" 
+              <input
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full bg-black/40 border border-border/50 rounded-xl py-3 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-muted-foreground/50" 
+                className="w-full bg-black/40 border border-border/50 rounded-xl py-3 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-muted-foreground/50"
                 placeholder="you@example.com"
               />
             </div>
@@ -79,12 +110,12 @@ export default function LoginPage() {
             <label className="text-sm font-medium ml-1">Password</label>
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-              <input 
-                type="password" 
+              <input
+                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full bg-black/40 border border-border/50 rounded-xl py-3 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-muted-foreground/50" 
+                className="w-full bg-black/40 border border-border/50 rounded-xl py-3 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-muted-foreground/50"
                 placeholder="••••••••"
               />
             </div>
@@ -92,8 +123,8 @@ export default function LoginPage() {
 
           {error && <p className="text-red-400 text-sm italic">{error}</p>}
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={loading}
             className="w-full bg-primary text-primary-foreground py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all disabled:opacity-50"
           >
@@ -107,7 +138,7 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-8 text-center">
-          <button 
+          <button
             onClick={() => setIsRegister(!isRegister)}
             className="text-sm text-muted-foreground hover:text-primary transition-colors"
           >

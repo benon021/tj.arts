@@ -3,12 +3,25 @@
 import { useState, useEffect } from 'react'
 import Navbar from '@/components/landing/Navbar'
 import { motion } from 'framer-motion'
-import { Users, Mail, Lock, Shield, Edit2, Loader2, Search, X, CheckCircle } from 'lucide-react'
+import { Mail, Lock, Shield, Edit2, Loader2, Search, X, CheckCircle } from 'lucide-react'
+
+interface Profile {
+  id: string
+  is_admin: boolean
+  full_name?: string
+}
+
+interface User {
+  id: string
+  email?: string
+  created_at: string
+  profile?: Profile | null
+}
 
 export default function UserManagementPage() {
-  const [users, setUsers] = useState<any[]>([])
+  const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
-  const [editingUser, setEditingUser] = useState<any | null>(null)
+  const [editingUser, setEditingUser] = useState<User | null>(null)
   const [newPassword, setNewPassword] = useState('')
   const [newEmail, setNewEmail] = useState('')
   const [isAdmin, setIsAdmin] = useState(false)
@@ -39,8 +52,8 @@ export default function UserManagementPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: editingUser.id,
-          email: newEmail !== editingUser.email ? newEmail : undefined,
+          userId: editingUser?.id,
+          email: newEmail !== editingUser?.email ? newEmail : undefined,
           password: newPassword || undefined,
           isAdmin: isAdmin
         })
@@ -134,7 +147,7 @@ export default function UserManagementPage() {
                            <button 
                              onClick={() => {
                                setEditingUser(user)
-                               setNewEmail(user.email)
+                               setNewEmail(user.email || '')
                                setIsAdmin(user.profile?.is_admin || false)
                              }}
                              className="p-3 bg-white/5 border border-border rounded-xl opacity-0 group-hover:opacity-100 hover:bg-primary/10 hover:border-primary/50 transition-all"

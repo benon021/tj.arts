@@ -1,10 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Navbar from '@/components/landing/Navbar'
-import { motion } from 'framer-motion'
-import { LayoutDashboard, ShoppingBag, Palette, Users, FileText, Settings, CheckCircle, Clock, AlertCircle, TrendingUp, MoreVertical, ArrowRight } from 'lucide-react'
-import Image from 'next/image'
+import { LayoutDashboard, ShoppingBag, Palette, Users, FileText, Settings, CheckCircle, Clock, MoreVertical, ArrowRight } from 'lucide-react'
 
 const stats = [
    { label: 'Total Orders', value: '124', icon: ShoppingBag, color: 'text-blue-400' },

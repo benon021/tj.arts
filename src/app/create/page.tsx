@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Navbar from '@/components/landing/Navbar'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, X, Check, ArrowRight, ArrowLeft, Image as ImageIcon, Type, Sparkles } from 'lucide-react'
+import { Upload, X, Check, ArrowRight, ArrowLeft, Image as ImageIcon, Sparkles } from 'lucide-react'
 import Image from 'next/image'
 import { useOrderStore } from '@/store/useOrderStore'
 import { useRouter } from 'next/navigation'
@@ -17,23 +17,13 @@ const templates = [
 export default function CreatePage() {
   const [step, setStep] = useState(1)
   const { templateId, setTemplate, imageUrls, setImages, titleText, subtitleText, setText } = useOrderStore()
-  const [files, setFiles] = useState<File[]>([])
-  const [previews, setPreviews] = useState<string[]>([])
   const router = useRouter()
-
-  useEffect(() => {
-    if (imageUrls.length > 0 && previews.length === 0) {
-      setPreviews(imageUrls)
-    }
-  }, [imageUrls])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files).slice(0, 3)
-      setFiles(selectedFiles)
       const newPreviews = selectedFiles.map(file => URL.createObjectURL(file))
-      setPreviews(newPreviews)
-      setImages(newPreviews) // In real app, we upload to Supabase and get URLs
+      setImages(newPreviews) // Update store directly
     }
   }
 
@@ -82,13 +72,12 @@ export default function CreatePage() {
                 </div>
 
                 <div className="flex flex-wrap gap-4 justify-center">
-                  {previews.map((url, i) => (
+                  {imageUrls.map((url, i) => (
                     <div key={i} className="relative w-32 h-32 rounded-xl overflow-hidden border-2 border-primary/20">
                       <Image src={url} alt="preview" fill className="object-cover" />
                       <button 
                         onClick={() => {
-                          const newPreviews = previews.filter((_, index) => index !== i)
-                          setPreviews(newPreviews)
+                          const newPreviews = imageUrls.filter((_, index) => index !== i)
                           setImages(newPreviews)
                         }}
                         className="absolute top-1 right-1 bg-black/50 p-1 rounded-full text-white hover:bg-red-500 transition-colors"
@@ -98,7 +87,7 @@ export default function CreatePage() {
                     </div>
                   ))}
                   
-                  {previews.length < 3 && (
+                  {imageUrls.length < 3 && (
                     <label className="w-32 h-32 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-all cursor-pointer flex flex-col items-center justify-center gap-2 group">
                       <Upload className="text-muted-foreground group-hover:text-primary transition-colors" size={24} />
                       <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Add Photo</span>
@@ -109,7 +98,7 @@ export default function CreatePage() {
 
                 <div className="pt-8 flex justify-end">
                   <button 
-                    disabled={previews.length === 0}
+                    disabled={imageUrls.length === 0}
                     onClick={nextStep}
                     className="px-8 py-3 bg-primary text-primary-foreground font-bold rounded-xl flex items-center gap-2 hover:bg-primary/90 transition-all disabled:opacity-50"
                   >
@@ -236,8 +225,8 @@ export default function CreatePage() {
                     
                     {/* User Photo Placeholder Overlay (Simulation) */}
                     <div className="absolute inset-x-8 top-16 bottom-32 bg-black/20 backdrop-blur-sm border border-white/10 rounded-lg flex items-center justify-center overflow-hidden">
-                       {previews[0] ? (
-                         <Image src={previews[0]} alt="user photo" fill className="object-cover opacity-50" />
+                       {imageUrls[0] ? (
+                         <Image src={imageUrls[0]} alt="user photo" fill className="object-cover opacity-50" />
                        ) : (
                          <ImageIcon className="text-white/20" size={48} />
                        )}
@@ -264,7 +253,7 @@ export default function CreatePage() {
                        </div>
                        <div className="flex justify-between items-center pb-4 border-b border-border/50">
                           <span className="text-muted-foreground">Photos</span>
-                          <span className="font-bold">{previews.length} Uploaded</span>
+                          <span className="font-bold">{imageUrls.length} Uploaded</span>
                        </div>
                        <div className="flex justify-between items-center">
                           <span className="text-muted-foreground">Total Price</span>

@@ -11,7 +11,7 @@ const posts = [
     title: "The Art of Cinematic Portraiture",
     excerpt: "Discover the techniques behind our movie-inspired digital paintings and how we capture emotion.",
     date: "March 25, 2024",
-    author: "Lumiaxy Artist",
+    author: "TJ.Arts Artist",
     image: "/templates/netflix.png",
     slug: "cinematic-portraiture-art"
   },
@@ -19,7 +19,7 @@ const posts = [
     title: "Why Luxury Frames Matter",
     excerpt: "How a museum-quality frame can transform a simple digital artwork into a timeless masterpiece.",
     date: "March 20, 2024",
-    author: "Lumiaxy Artist",
+    author: "TJ.Arts Artist",
     image: "/templates/luxury.png",
     slug: "luxury-frames-impact"
   },
@@ -27,7 +27,7 @@ const posts = [
     title: "From Sci-Fi to Reality",
     excerpt: "Exploring the futurism trends in digital art and how we incorporate neon aesthetics into portraits.",
     date: "March 15, 2024",
-    author: "Lumiaxy Artist",
+    author: "TJ.Arts Artist",
     image: "/templates/scifi.png",
     slug: "scifi-art-trends"
   }

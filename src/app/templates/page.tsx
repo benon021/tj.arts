@@ -78,7 +78,7 @@ export default function TemplatesPage() {
                 />
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center p-8 text-center">
                   <p className="text-sm font-light text-white/80 leading-relaxed italic">
-                    "{template.description}"
+                    &quot;{template.description}&quot;
                   </p>
                 </div>
               </div>
